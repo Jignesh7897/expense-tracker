@@ -19,12 +19,13 @@
           </div>
           <div class="mb-3">
             <label class="form-label">Category <span class="text-danger">*</span></label>
-            <select name="category" class="form-select" required>
+            <select id="expCatSelect" class="form-select" onchange="toggleOther('expCatSelect','expCatOther')">
               <option value="">Select category</option>
               {% for cat in ['Food','Travel','Shopping','Education','Medical','Bills','Entertainment','Other'] %}
               <option>{{ cat }}</option>
               {% endfor %}
             </select>
+            <input type="text" id="expCatOther" name="category" class="form-control mt-2 d-none" placeholder="Enter category name" required>
           </div>
           <div class="mb-3">
             <label class="form-label">Payment Method</label>
@@ -44,7 +45,21 @@
             <textarea name="description" class="form-control" rows="2" placeholder="Optional note..."></textarea>
           </div>
           <button type="submit" class="btn btn-danger w-100"><i class="bi bi-plus-lg me-2"></i>Add Expense</button>
-          <script>document.querySelector('input[name="amount"]').focus();</script>
+          <script>
+            document.querySelector('input[name="amount"]').focus();
+            function toggleOther(selId, inputId) {
+              const sel = document.getElementById(selId);
+              const inp = document.getElementById(inputId);
+              if (sel.value === 'Other') {
+                inp.classList.remove('d-none'); inp.required = true; inp.focus();
+                sel.name = '';
+              } else {
+                inp.classList.add('d-none'); inp.required = false; inp.value = '';
+                sel.name = 'category';
+              }
+            }
+            document.getElementById('expCatSelect').name = 'category';
+          </script>
         </form>
       </div>
     </div>

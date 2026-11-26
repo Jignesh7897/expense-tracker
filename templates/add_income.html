@@ -19,10 +19,11 @@
           </div>
           <div class="mb-3">
             <label class="form-label">Category <span class="text-danger">*</span></label>
-            <select name="category" class="form-select" required>
+            <select id="incomeCatSelect" class="form-select" onchange="toggleOther('incomeCatSelect','incomeCatOther')">
               <option value="">Select category</option>
               <option>Salary</option><option>Business</option><option>Freelancing</option><option>Other</option>
             </select>
+            <input type="text" id="incomeCatOther" name="category" class="form-control mt-2 d-none" placeholder="Enter category name" required>
           </div>
           <div class="mb-3">
             <label class="form-label">Date <span class="text-danger">*</span></label>
@@ -33,7 +34,22 @@
             <textarea name="description" class="form-control" rows="2" placeholder="Optional note..."></textarea>
           </div>
           <button type="submit" class="btn btn-success w-100"><i class="bi bi-plus-lg me-2"></i>Add Income</button>
-          <script>document.querySelector('input[name="amount"]').focus();</script>
+          <script>
+            document.querySelector('input[name="amount"]').focus();
+            function toggleOther(selId, inputId) {
+              const sel = document.getElementById(selId);
+              const inp = document.getElementById(inputId);
+              if (sel.value === 'Other') {
+                inp.classList.remove('d-none'); inp.required = true; inp.focus();
+                sel.name = ''; 
+              } else {
+                inp.classList.add('d-none'); inp.required = false; inp.value = '';
+                sel.name = 'category';
+              }
+            }
+            // set default name
+            document.getElementById('incomeCatSelect').name = 'category';
+          </script>
         </form>
       </div>
     </div>
