@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Edit Expense – ExpenseTracker{% endblock %}
+
+{% block content %}
+<div class="page-header mb-4">
+  <h4 class="mb-0 fw-bold"><i class="bi bi-pencil-square me-2 text-primary"></i>Edit Expense</h4>
+</div>
+<div class="row justify-content-center">
+  <div class="col-lg-5">
+    <div class="form-card">
+      <div class="form-card-header"><i class="bi bi-pencil me-2"></i>Update Expense Record</div>
+      <div class="p-4">
+        <form method="POST" novalidate>
+          <div class="mb-3">
+            <label class="form-label">Amount (₹) <span class="text-danger">*</span></label>
+            <input type="number" name="amount" class="form-control" value="{{ tx.amount }}" min="0.01" step="0.01" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Category <span class="text-danger">*</span></label>
+            <select name="category" class="form-select" required>
+              {% for cat in ['Food','Travel','Shopping','Education','Medical','Bills','Entertainment','Other'] %}
+              <option {% if tx.category==cat %}selected{% endif %}>{{ cat }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Payment Method</label>
+            <select name="payment_method" class="form-select">
+              <option value="">Select method</option>
+              {% for pm in ['Cash','UPI','Bank Transfer','Card'] %}
+              <option {% if tx.payment_method==pm %}selected{% endif %}>{{ pm }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Date <span class="text-danger">*</span></label>
+            <input type="date" name="date" class="form-control" value="{{ tx.date }}" required>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">Description</label>
+            <textarea name="description" class="form-control" rows="2">{{ tx.description or '' }}</textarea>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-grow-1"><i class="bi bi-check-lg me-2"></i>Update</button>
+            <a href="{{ url_for('expense') }}" class="btn btn-outline-secondary flex-grow-1"><i class="bi bi-x-lg me-2"></i>Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

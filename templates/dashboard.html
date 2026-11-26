@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard – ExpenseTracker{% endblock %}
+
+{% block content %}
+<div class="page-header mb-4">
+  <h4 class="mb-0 fw-bold"><i class="bi bi-speedometer2 me-2 text-primary"></i>Dashboard</h4>
+  <small class="text-muted">Welcome back! Here's your financial overview.</small>
+</div>
+
+<!-- Summary cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3">
+    <div class="summary-card income-card">
+      <div class="card-icon"><i class="bi bi-arrow-up-circle-fill"></i></div>
+      <div class="card-body-inner">
+        <p class="card-label">Total Income</p>
+        <h4 class="card-value">₹{{ "{:,.0f}".format(total_income) }}</h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="summary-card expense-card">
+      <div class="card-icon"><i class="bi bi-arrow-down-circle-fill"></i></div>
+      <div class="card-body-inner">
+        <p class="card-label">Total Expenses</p>
+        <h4 class="card-value">₹{{ "{:,.0f}".format(total_expense) }}</h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="summary-card balance-card">
+      <div class="card-icon"><i class="bi bi-wallet-fill"></i></div>
+      <div class="card-body-inner">
+        <p class="card-label">Available Balance</p>
+        <h4 class="card-value {% if balance < 0 %}text-danger{% endif %}">₹{{ "{:,.0f}".format(balance) }}</h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="summary-card tx-card">
+      <div class="card-icon"><i class="bi bi-receipt-cutoff"></i></div>
+      <div class="card-body-inner">
+        <p class="card-label">Transactions</p>
+        <h4 class="card-value">{{ tx_count }}</h4>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts row -->
+<div class="row g-3 mb-4">
+  <div class="col-lg-7">
+    <div class="chart-card h-100">
+      <div class="chart-card-header"><i class="bi bi-bar-chart me-2"></i>Monthly Income vs Expenses</div>
+      <div class="chart-wrapper"><canvas id="monthlyChart"></canvas></div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="chart-card h-100">
+      <div class="chart-card-header"><i class="bi bi-pie-chart me-2"></i>Expense by Category</div>
+      <div class="chart-wrapper"><canvas id="pieChart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- Monthly summary + recent transactions -->
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="chart-card h-100">
+      <div class="chart-card-header"><i class="bi bi-calendar3 me-2"></i>{{ current_month }} Summary</div>
+      <div class="p-3">
+        <div class="month-stat income"><span><i class="bi bi-arrow-up-circle me-2"></i>Income</span><strong>₹{{ "{:,.0f}".format(m_inc) }}</strong></div>
+        <div class="month-stat expense"><span><i class="bi bi-arrow-down-circle me-2"></i>Expenses</span><strong>₹{{ "{:,.0f}".format(m_exp) }}</strong></div>
+        <div class="month-stat savings"><span><i class="bi bi-piggy-bank me-2"></i>Savings</span><strong class="{% if m_save < 0 %}text-danger{% endif %}">₹{{ "{:,.0f}".format(m_save) }}</strong></div>
+        {% if m_inc > 0 %}
+        <div class="mt-3">
+          <small class="text-muted">Savings Rate</small>
+          <div class="progress mt-1" style="height:8px">
+            <div class="progress-bar bg-success" style="width:{{ [[(m_save/m_inc*100)|round(1), 0]|max, 100]|min }}%"></div>
+          </div>
+          <small class="text-muted">{{ [(m_save/m_inc*100)|round(1), 0]|max }}%</small>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="chart-card h-100">
+      <div class="chart-card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-clock-history me-2"></i>Recent Transactions</span>
+        <a href="{{ url_for('transactions') }}" class="btn btn-sm btn-outline-primary">View All</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 recent-table">
+          <thead><tr><th>Date</th><th>Category</th><th>Type</th><th class="text-end">Amount</th></tr></thead>
+          <tbody>
+            {% for tx in recent %}
+            <tr>
+              <td class="text-muted small">{{ tx.date }}</td>
+              <td><span class="cat-badge">{{ tx.category }}</span></td>
+              <td>
+                {% if tx.transaction_type == 'income' %}
+                  <span class="badge bg-success-subtle text-success">Income</span>
+                {% else %}
+                  <span class="badge bg-danger-subtle text-danger">Expense</span>
+                {% endif %}
+              </td>
+              <td class="text-end fw-semibold {% if tx.transaction_type=='income' %}text-success{% else %}text-danger{% endif %}">
+                {% if tx.transaction_type=='income' %}+{% else %}-{% endif %}₹{{ "{:,.0f}".format(tx.amount) }}
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="text-center text-muted py-4">No transactions yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const monthlyData = {{ monthly | tojson }};
+const catData     = {{ cat_data | tojson }};
+
+// Bar chart
+new Chart(document.getElementById('monthlyChart'), {
+  type: 'bar',
+  data: {
+    labels: monthlyData.map(d => d.label),
+    datasets: [
+      { label: 'Income',  data: monthlyData.map(d => d.income),  backgroundColor: 'rgba(34,197,94,0.8)',  borderRadius: 6 },
+      { label: 'Expense', data: monthlyData.map(d => d.expense), backgroundColor: 'rgba(239,68,68,0.8)',  borderRadius: 6 }
+    ]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } },
+    scales: { y: { beginAtZero: true, ticks: { callback: v => '₹'+v.toLocaleString('en-IN') } } } }
+});
+
+// Pie chart
+const COLORS = ['#6366f1','#f59e0b','#10b981','#ef4444','#3b82f6','#ec4899','#14b8a6','#f97316'];
+new Chart(document.getElementById('pieChart'), {
+  type: 'doughnut',
+  data: {
+    labels: catData.map(d => d.category),
+    datasets: [{ data: catData.map(d => d.amount), backgroundColor: COLORS, borderWidth: 2, borderColor: '#fff' }]
+  },
+  options: { responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { padding: 12, font: { size: 12 } } },
+      tooltip: { callbacks: { label: ctx => ` ₹${ctx.parsed.toLocaleString('en-IN')}` } } } }
+});
+</script>
+{% endblock %}

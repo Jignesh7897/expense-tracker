@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block title %}Transactions – ExpenseTracker{% endblock %}
+
+{% block content %}
+<div class="page-header mb-4">
+  <h4 class="mb-0 fw-bold"><i class="bi bi-list-ul me-2 text-primary"></i>Transaction History</h4>
+</div>
+
+<!-- Filters -->
+<div class="form-card mb-4">
+  <div class="p-3">
+    <form method="GET" class="row g-2 align-items-end">
+      <div class="col-12 col-sm-6 col-md-3">
+        <label class="form-label small mb-1">Search</label>
+        <input type="text" name="q" class="form-control form-control-sm" placeholder="Category or description..." value="{{ q }}">
+      </div>
+      <div class="col-6 col-sm-3 col-md-2">
+        <label class="form-label small mb-1">Type</label>
+        <select name="type" class="form-select form-select-sm">
+          <option value="">All</option>
+          <option value="income"  {% if ttype=='income'  %}selected{% endif %}>Income</option>
+          <option value="expense" {% if ttype=='expense' %}selected{% endif %}>Expense</option>
+        </select>
+      </div>
+      <div class="col-6 col-sm-3 col-md-2">
+        <label class="form-label small mb-1">Category</label>
+        <select name="category" class="form-select form-select-sm">
+          <option value="">All</option>
+          {% for c in categories %}<option {% if cat==c[0] %}selected{% endif %}>{{ c[0] }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-6 col-sm-3 col-md-2">
+        <label class="form-label small mb-1">From</label>
+        <input type="date" name="date_from" class="form-control form-control-sm" value="{{ dfrom }}">
+      </div>
+      <div class="col-6 col-sm-3 col-md-2">
+        <label class="form-label small mb-1">To</label>
+        <input type="date" name="date_to" class="form-control form-control-sm" value="{{ dto }}">
+      </div>
+      <div class="col-12 col-md-1 d-flex gap-1">
+        <button type="submit" class="btn btn-primary btn-sm flex-grow-1"><i class="bi bi-search"></i></button>
+        <a href="{{ url_for('transactions') }}" class="btn btn-outline-secondary btn-sm flex-grow-1"><i class="bi bi-x-lg"></i></a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="chart-card">
+  <div class="chart-card-header d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-table me-2"></i>All Transactions</span>
+    <span class="badge bg-primary">{{ transactions|length }} records</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>#</th><th>Date</th><th>Type</th><th>Category</th>
+          <th>Payment</th><th>Description</th><th class="text-end">Amount</th><th class="text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tx in transactions %}
+        <tr>
+          <td class="text-muted small">{{ loop.index }}</td>
+          <td class="text-muted small">{{ tx.date }}</td>
+          <td>
+            {% if tx.transaction_type == 'income' %}
+              <span class="badge bg-success-subtle text-success">Income</span>
+            {% else %}
+              <span class="badge bg-danger-subtle text-danger">Expense</span>
+            {% endif %}
+          </td>
+          <td><span class="cat-badge">{{ tx.category }}</span></td>
+          <td class="text-muted small">{{ tx.payment_method or '—' }}</td>
+          <td class="text-muted small">{{ tx.description or '—' }}</td>
+          <td class="text-end fw-semibold {% if tx.transaction_type=='income' %}text-success{% else %}text-danger{% endif %}">
+            {% if tx.transaction_type=='income' %}+{% else %}-{% endif %}₹{{ "{:,.0f}".format(tx.amount) }}
+          </td>
+          <td class="text-center">
+            {% if tx.transaction_type == 'income' %}
+              <a href="{{ url_for('edit_income', tid=tx.id) }}" class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil"></i></a>
+            {% else %}
+              <a href="{{ url_for('edit_expense', tid=tx.id) }}" class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil"></i></a>
+            {% endif %}
+            <form method="POST" action="{{ url_for('delete_transaction', tid=tx.id) }}" class="d-inline" onsubmit="return confirm('Delete this transaction?')">
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="text-center text-muted py-5">No transactions found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

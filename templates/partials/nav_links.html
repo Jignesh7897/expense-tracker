@@ -1,0 +1,8 @@
+<nav class="nav-menu">
+  <a href="{{ url_for('dashboard') }}"     class="nav-link {% if request.endpoint=='dashboard'     %}active{% endif %}"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+  <a href="{{ url_for('income') }}"        class="nav-link {% if request.endpoint in ['income','edit_income'] %}active{% endif %}"><i class="bi bi-arrow-up-circle"></i><span>Income</span></a>
+  <a href="{{ url_for('expense') }}"       class="nav-link {% if request.endpoint in ['expense','edit_expense'] %}active{% endif %}"><i class="bi bi-arrow-down-circle"></i><span>Expenses</span></a>
+  <a href="{{ url_for('transactions') }}"  class="nav-link {% if request.endpoint=='transactions'  %}active{% endif %}"><i class="bi bi-list-ul"></i><span>Transactions</span></a>
+  <a href="{{ url_for('budgets') }}"       class="nav-link {% if request.endpoint=='budgets'       %}active{% endif %}"><i class="bi bi-pie-chart"></i><span>Budgets</span></a>
+  <a href="{{ url_for('reports') }}"       class="nav-link {% if request.endpoint=='reports'       %}active{% endif %}"><i class="bi bi-bar-chart-line"></i><span>Reports</span></a>
+</nav>

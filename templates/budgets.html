@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Budgets – ExpenseTracker{% endblock %}
+
+{% block content %}
+<div class="page-header mb-4">
+  <h4 class="mb-0 fw-bold"><i class="bi bi-pie-chart me-2 text-warning"></i>Budget Management</h4>
+  <small class="text-muted">{{ month }} {{ year }}</small>
+</div>
+
+<div class="row g-4">
+  <!-- Set budget form -->
+  <div class="col-lg-4">
+    <div class="form-card">
+      <div class="form-card-header"><i class="bi bi-plus-circle me-2"></i>Set Budget</div>
+      <div class="p-4">
+        <form method="POST" action="{{ url_for('add_budget') }}" novalidate>
+          <input type="hidden" name="month" value="{{ current_month }}">
+          <input type="hidden" name="year"  value="{{ current_year }}">
+          <div class="mb-3">
+            <label class="form-label">Category <span class="text-danger">*</span></label>
+            <select name="category" class="form-select" required>
+              <option value="">Select category</option>
+              {% for cat in expense_cats %}<option>{{ cat }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">Monthly Limit (₹) <span class="text-danger">*</span></label>
+            <input type="number" name="monthly_limit" class="form-control" placeholder="0.00" min="1" step="0.01" required>
+          </div>
+          <button type="submit" class="btn btn-warning w-100 text-dark fw-semibold"><i class="bi bi-check-lg me-2"></i>Save Budget</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Budget list -->
+  <div class="col-lg-8">
+    {% if budgets %}
+      <div class="row g-3">
+        {% for b in budgets %}
+        <div class="col-md-6">
+          <div class="budget-card {% if b.pct >= 100 %}danger{% elif b.pct >= 80 %}warning{% endif %}">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <span class="cat-badge">{{ b.category }}</span>
+                {% if b.pct >= 100 %}
+                  <span class="badge bg-danger ms-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>Over Budget!</span>
+                {% elif b.pct >= 80 %}
+                  <span class="badge bg-warning text-dark ms-1"><i class="bi bi-exclamation-circle-fill me-1"></i>Near Limit</span>
+                {% endif %}
+              </div>
+              <form method="POST" action="{{ url_for('delete_budget', bid=b.id) }}" onsubmit="return confirm('Remove this budget?')">
+                <button class="btn btn-sm btn-outline-danger py-0 px-1"><i class="bi bi-trash"></i></button>
+              </form>
+            </div>
+            <div class="d-flex justify-content-between small text-muted mb-1">
+              <span>Spent: <strong class="text-dark">₹{{ "{:,.0f}".format(b.spent) }}</strong></span>
+              <span>Limit: <strong class="text-dark">₹{{ "{:,.0f}".format(b.limit) }}</strong></span>
+            </div>
+            <div class="progress" style="height:10px">
+              <div class="progress-bar {% if b.pct >= 100 %}bg-danger{% elif b.pct >= 80 %}bg-warning{% else %}bg-success{% endif %}"
+                   style="width:{{ [b.pct, 100]|min }}%"></div>
+            </div>
+            <div class="d-flex justify-content-between mt-1">
+              <small class="text-muted">{{ b.pct }}% used</small>
+              <small class="{% if b.limit - b.spent < 0 %}text-danger{% else %}text-muted{% endif %}">
+                {% if b.limit - b.spent >= 0 %}₹{{ "{:,.0f}".format(b.limit - b.spent) }} left{% else %}₹{{ "{:,.0f}".format((b.limit - b.spent)|abs) }} over{% endif %}
+              </small>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="chart-card p-5 text-center text-muted">
+        <i class="bi bi-pie-chart fs-1 d-block mb-3 opacity-25"></i>
+        No budgets set for this month. Use the form to add one.
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
