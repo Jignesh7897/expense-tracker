@@ -71,7 +71,7 @@
       <div class="p-3">
         <div class="month-stat income"><span><i class="bi bi-arrow-up-circle me-2"></i>Income</span><strong>₹{{ "{:,.0f}".format(m_inc) }}</strong></div>
         <div class="month-stat expense"><span><i class="bi bi-arrow-down-circle me-2"></i>Expenses</span><strong>₹{{ "{:,.0f}".format(m_exp) }}</strong></div>
-        <div class="month-stat savings"><span><i class="bi bi-piggy-bank me-2"></i>Savings</span><strong class="{% if m_save < 0 %}text-danger{% endif %}">₹{{ "{:,.0f}".format(m_save) }}</strong></div>
+        <div class="month-stat savings"><span><i class="bi bi-wallet me-2"></i>Available Balance</span><strong class="{% if m_save < 0 %}text-danger{% endif %}">₹{{ "{:,.0f}".format(m_save) }}</strong></div>
         {% if m_inc > 0 %}
         <div class="mt-3">
           <small class="text-muted">Savings Rate</small>
